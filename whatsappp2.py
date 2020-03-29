@@ -22,24 +22,24 @@ driver.get('https://web.whatsapp.com/')
 
 #finding and opening the specific group
 driver.find_element_by_xpath('//*[@title="Leaf song discovery Hindi"]').click()
-driver.find_element_by_class_name('_1ays2')
+
 reg=r'MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|SUNDAY'
 
 #initializing elem as the first elem to be the first message on the html page
-elements=driver.find_elements_by_class_name('-N6Gq')
+elements=driver.find_elements_by_class_name('Tkt2p')
 elem=elements[0]
 var=True
 checked=[]
 while var:
     #using the elem object to scroll up the table 
     driver.execute_script("arguments[0].scrollIntoView();", elem)
-    elements=driver.find_elements_by_class_name('-N6Gq')
+    elements=driver.find_elements_by_class_name('Tkt2p')
     elem=elements[0]
     driver.implicitly_wait(0.0000000000000000000000000001)
     
     try:
         #finding the tag of today , yesterday , monday , wed etc
-        kek=driver.find_elements_by_class_name('_F7Vk')
+        kek=driver.find_elements_by_class_name('_3FXB1')
         for i in range(len(kek)):
             if kek[i] not in checked:
                 if re.search(reg,kek[i].text):
@@ -47,8 +47,7 @@ while var:
                     var=False
                 else:
                     checked.append(kek[i])
-                    
-                    
+                                       
                 
     except:
         pass
@@ -64,9 +63,9 @@ soup=BeautifulSoup(sourcer,features='html.parser')
 
 from collections import defaultdict 
 import re
-times=soup.findAll("span",{"class":"_3fnHB"})
+times=soup.findAll("span",{"class":"_3EFt_"})
 #all the messages
-lol_new=soup.findAll("div",{"class":"-N6Gq"})
+lol_new=soup.findAll("div",{"class":"Tkt2p"})
 
 # to find the messages specific to yesterday
 start_end=[]
@@ -77,7 +76,7 @@ for i in range(len(times)-1):
 lol_new=lol_new[start_end[0]:start_end[1]]
 
 #populating the names of the sen
-sender_msg_numbers=soup.findAll("span",{"class":"ZObjg"})
+sender_msg_numbers=soup.findAll("span",{"class":"RZ7GO"})
 names=defaultdict()
 links=defaultdict()
 for name in sender_msg_numbers:
@@ -150,10 +149,9 @@ df['No_Of_Songs'+str(yesterday)].iloc[len(df)-1]=df['No_Of_Songs'+str(yesterday)
 df['Points'+str(yesterday)].iloc[len(df)-1]=0
 df['Points'+str(yesterday)].iloc[len(df)-1]=df['Points'+str(yesterday)].sum()      
 df['Name'].iloc[len(df)-1]='Sums of all fields'              
-df.to_excel("output{}.xlsx".format(str(yesterday)),index=False)
+df.to_excel("output.xlsx",index=False)
 
-for msg in lol_new:
-    print(msg.get_text())    
+   
 
 
 for badmsg in lol_new:
@@ -173,18 +171,67 @@ for badmsg in lol_new:
                 for k,v in links.items():
                     if link==k:
                         links[k][0]+=1
+                        links[k].append(msg[0:11])
 
-df2 = pd.DataFrame(np.random.randn(100, 4), columns=list('ABCD'))
-df2['links']=0
-df2['No of Likes']=0
-df2['Shared By']=0
+df2 = pd.read_excel('outputer.xlsx')
+df2['links'+str(yesterday)]=0
+df2['No of Likes'+str(yesterday)]=0
+df2['Shared By'+str(yesterday)]=0
+df2['Liked By'+str(yesterday)]=0
 
 counter=0
 for k,v in links.items():
-    df2['links'].iloc[counter]=k
-    df2['No of Likes'].iloc[counter]=links[k][0]
-    df2['Shared By'].iloc[counter]=links[k][1]
+    df2['links'+str(yesterday)].iloc[counter]=k
+    df2['No of Likes'+str(yesterday)].iloc[counter]=links[k][0]
+    df2['Shared By'+str(yesterday)].iloc[counter]=links[k][1]
+    df2['Liked By'+str(yesterday)].iloc[counter]=links[k][2:]
     counter+=1
-df2=df2.drop(['A','B','C','D'],axis=1)
-print(df2)
-df2.to_excel("outputer.xlsx")
+
+
+df2.to_excel("outputer.xlsx",index=False)
+
+df3 = pd.DataFrame(np.random.randint(0,100,size=(140, 4)), columns=list('ABCD'))
+df3['Name']=df['Name']
+df3=df3.drop(columns=['A','B','C','D'],axis=1)
+df3['Points']=0
+for i in range(len(df)):
+    if df3['Name'].iloc[i]==df['Name'].iloc[i]:
+        df3['Points'].iloc[i]+=df['Points'+str(yesterday)].iloc[i]
+df3.to_excel('PointsTable.xlsx',index=False)
+
+luldict=defaultdict()
+
+    
+for badmsg in lol_new:
+    msg=badmsg.get_text()[4:]
+    print(msg)
+    if re.search('www.youtube.com',msg,re.IGNORECASE):
+        pass
+    else:
+        number=msg[0:11]
+        for i in range(len(msg)):
+            if msg[i]=='+':
+                name=msg[11:i]
+        luldict[number]=name
+
+df3=pd.read_excel('wow.xlsx')
+for k,v in names.items():
+    if k not in df3['Number'].unique():
+        for i in range(len(df3)):
+            if df3['Number'].iloc[i]==0:
+                df3["Number"].iloc[i]=k
+                break
+                
+for i in range(len(df3)):
+    for j in range(len(df)):
+        if df['Name'].iloc[j]==df3['Number'].iloc[i]:
+            df3['Points'].iloc[i]+=df['Points'+str(yesterday)].iloc[j]
+            break
+        
+
+df3.to_excel('PointsTablemid.xlsx',index=False)
+
+for k,v in luldict.items():
+    print (k)
+
+
