@@ -184,20 +184,16 @@ for k,v in links.items():
     df2['links'+str(yesterday)].iloc[counter]=k
     df2['No of Likes'+str(yesterday)].iloc[counter]=links[k][0]
     df2['Shared By'+str(yesterday)].iloc[counter]=links[k][1]
-    df2['Liked By'+str(yesterday)].iloc[counter]=links[k][2:]
+    try:
+        df2['Liked By'+str(yesterday)].iloc[counter]=links[k][2:]
+    except:
+        df2['Liked By'+str(yesterday)].iloc[counter]=0
     counter+=1
+
 
 
 df2.to_excel("outputer.xlsx",index=False)
 
-df3 = pd.DataFrame(np.random.randint(0,100,size=(140, 4)), columns=list('ABCD'))
-df3['Name']=df['Name']
-df3=df3.drop(columns=['A','B','C','D'],axis=1)
-df3['Points']=0
-for i in range(len(df)):
-    if df3['Name'].iloc[i]==df['Name'].iloc[i]:
-        df3['Points'].iloc[i]+=df['Points'+str(yesterday)].iloc[i]
-df3.to_excel('PointsTable.xlsx',index=False)
 
 luldict=defaultdict()
 
@@ -214,7 +210,7 @@ for badmsg in lol_new:
                 name=msg[11:i]
         luldict[number]=name
 
-df3=pd.read_excel('wow.xlsx')
+df3=pd.read_excel('PointsTablemid.xlsx')
 for k,v in names.items():
     if k not in df3['Number'].unique():
         for i in range(len(df3)):
@@ -225,13 +221,17 @@ for k,v in names.items():
 for i in range(len(df3)):
     for j in range(len(df)):
         if df['Name'].iloc[j]==df3['Number'].iloc[i]:
-            df3['Points'].iloc[i]+=df['Points'+str(yesterday)].iloc[j]
+            df3['Points'].iloc[i]+=df["Points"+str(yesterday)].iloc[j]
             break
         
 
 df3.to_excel('PointsTablemid.xlsx',index=False)
 
-for k,v in luldict.items():
-    print (k)
 
-
+countlol=0
+for i in range(len(df)):
+    if df['Name'].iloc[i]!=0:
+        if df["Points"+str(yesterday)].iloc[i]!=0:
+            countlol+=1
+print('The number of active users for ' + str(yesterday) +' are ' + str(countlol) +' (group 1)')
+print('The number of links shared on ' + str(yesterday) +' are ' + str(len(links)) + '(group 1)')
