@@ -15,43 +15,55 @@ from selenium.webdriver.support.ui import WebDriverWait
 import re
 import datetime
 from collections import defaultdict 
-
+from selenium.webdriver.chrome.options import Options
+from selenium import webdriver
 
 
 
 
 def initiator():
+    """
+    
+    Initializing a selenium object which is the key for initiating the scraper
+    Its just a basic chrome window which can be automated  using methods provided by selenium library
 
-""" 
-
-        Initializing a selenium object which is the key for initiating the scraper
-        Its just a basic chrome window which can be automated  using methods provided by selenium library
-"""
-    chrome_options = Options()  # Saving the last session
-    chrome_options.add_argument("user-data-dir=selenium")
-    driver = webdriver.Chrome('./chromedriver', chrome_options=chrome_options)
-    tz = pytz.timezone("Asia/Kolkata")
+    """
+    
+    driver = Chrome()
     driver.get('https://web.whatsapp.com/')
+    time.sleep(60)
+    
+    return driver
 
 
 
 
 
-def scroller(group):
-"""
+def scroller(group,driver):
+    """
 
     Parameters
     ----------
-    group : TYPE - name of the grouo
+    group : TYPE - name of the group
         DESCRIPTION - It's to be used as we have to find the title of the group and click it open'
 
     Returns
    
     soup- The beautiful soup object
 
- """
+     """
+    driver.find_element_by_class_name('C28xL').click()
+    entername=driver.find_element_by_xpath('//*[@id="side"]/div[1]/div/label/div/div[2]')
+    entername.send_keys(str(group))
     driver.find_element_by_xpath('//*[@title='+'"'+str(group)+'"'+']').click()
-    reg=r'MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|SUNDAY'
+    try:
+        driver.find_element_by_class_name('_2pyvj').click()
+    except:
+        pass
+    time.sleep(60)
+    driver.find_element_by_xpath('//*[@id="side"]/div[1]/div/button').click()
+    
+    reg=r'YESTERDAY|MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|SUNDAY'
     elements=driver.find_elements_by_class_name('Tkt2p')
     elem=elements[0]
     var=True
@@ -82,7 +94,7 @@ def scroller(group):
 
 
 def computation_names(soup):
-"""
+    """
     
     Parameters
     ----------
@@ -133,7 +145,7 @@ def computation_names(soup):
                     for j in range(len(initial_msg)):
                         if initial_msg[j:j+11]=='https://you':
                             link=initial_msg[j:j+28]
-                            if link not in names[k] and len(names[k])<4:
+                            if link not in names[k] :
                                 names[k].append(link)
         else:
             for i in range(len(initial_msg)):
@@ -150,7 +162,7 @@ def computation_names(soup):
 
 
 def computation_links(soup,names):
-"""
+    """
 
     Parameters
     ----------
@@ -167,8 +179,9 @@ def computation_links(soup,names):
         
 
     """
+    
     links=defaultdict()
-    lol_new=soup.findall("div",{"class":"Tkt2p"})
+    lol_new=soup.findAll("div",{"class":"Tkt2p"})
     for badmsg in lol_new:
         l=badmsg.get_text().replace(" ","")
         if '-' in l:
@@ -192,7 +205,7 @@ def computation_links(soup,names):
                         if link==k:
                             links[k][0]+=1
                             links[k].append(l[0:10])
-        return links
+    return(links)
 
 
 
@@ -235,8 +248,8 @@ def compute_output_file(names,group_no):
     df['Points'+str(yesterday)].iloc[len(df)-1]=0
     df['Points'+str(yesterday)].iloc[len(df)-1]=df['Points'+str(yesterday)].sum()      
     df['Name'].iloc[len(df)-1]='Sums of all fields'              
-    df.to_excel("output"+str(group_no)+".xlsx",index=False)
-    
+    #df.to_excel("output"+str(group_no)+".xlsx",index=False)
+    return(df)
 
 
 def compute_outputer_file(links,group_no):
@@ -256,14 +269,13 @@ def compute_outputer_file(links,group_no):
         except:
             df2['Liked By'+str(yesterday)].iloc[counter]=0
         counter+=1 
-    df2.to_excel("outputer"+str(group_no)+".xlsx",index=False)
-    
+    #df2.to_excel("outputer"+str(group_no)+".xlsx",index=False)
+    return df2
     
 
-def compute_pointstable_file(names,group_no):
+def compute_pointstable_file(names,group_no,df):
         
     df3=pd.read_excel('PointsTablemid'+str(group_no)+'.xlsx',dtype={'Number':str})
-    df = pd.read_excel('output'+str(group_no)+'.xlsx',dtype={'Name':str})
     for k,v in names.items():
         if k not in df3['Number'].unique():
             for i in range(len(df3)):
@@ -274,22 +286,24 @@ def compute_pointstable_file(names,group_no):
         for j in range(len(df)):
             if df['Name'].iloc[j]==df3['Number'].iloc[i]:
                 df3['Points'].iloc[i]+=df["Points"+str(yesterday)].iloc[j]
-                break        
-    df3.to_excel('PointsTablemid'+str(group_no)+'.xlsx',index=False)
-    
+                break    
+    return df3
+    #df3.to_excel('PointsTablemid'+str(group_no)+'.xlsx',index=False)
 
 
 
-list_of_groups=['Leaf song discovery Hindi','Leaf SongDiscoveryHindi 2','Leaf SongDiscoveryHindi 3']
+list_of_groups=['Leaf song discovery Hindi','Leaf SongDiscoveryHindi 2']
 today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
 for group in list_of_groups:
-    initiator()
-    soup=scroller(group)
+    if list_of_groups.index(group)+1==1:
+        driver=initiator()
+    soup=scroller(group,driver)
+    soup2=soup
     names=computation_names(soup)
-    links=computation_links(soup)
-    compute_output_file(names,list_of_groups.index(group)+1,names)
-    compute_outputer_file(links,list_of_groups.index(group)+1,names)
-    compute_pointstable_file(names,list_of_groups.index(group)+1,names)
+    links=computation_links(soup2,names)
+    df=compute_output_file(names,list_of_groups.index(group)+1)
+    df2=compute_outputer_file(links,list_of_groups.index(group)+1)
+    df3=compute_pointstable_file(names,list_of_groups.index(group)+1,df)
     
     
