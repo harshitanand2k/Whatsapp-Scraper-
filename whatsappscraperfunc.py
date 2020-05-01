@@ -55,24 +55,41 @@ def scroller(group,driver):
     driver.find_element_by_class_name('C28xL').click()
     entername=driver.find_element_by_xpath('//*[@id="side"]/div[1]/div/label/div/div[2]')
     entername.send_keys(str(group))
-    driver.find_element_by_xpath('//*[@title='+'"'+str(group)+'"'+']').click()
+    hoja=False
+    
+    while hoja==False:
+        try:
+            driver.find_element_by_xpath('//*[@title='+'"'+str(group)+'"'+']').click()
+            hoja=True
+        except:
+            pass
     try:
         driver.find_element_by_class_name('_2pyvj').click()
     except:
         pass
     time.sleep(60)
-    driver.find_element_by_xpath('//*[@id="side"]/div[1]/div/button').click()
-    
-    reg=r'YESTERDAY|MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|SUNDAY'
+    please=False
+    while please==False:
+        try:
+            driver.find_element_by_xpath('//*[@id="side"]/div[1]/div/button').click()
+            please=True
+        except:
+            pass    
+    reg=r'MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY|SUNDAY'
     elements=driver.find_elements_by_class_name('Tkt2p')
     elem=elements[0]
     var=True
     checked=[]
-    while var:     
-        driver.execute_script("arguments[0].scrollIntoView();", elem)
-        elements=driver.find_elements_by_class_name('Tkt2p')
-        elem=elements[0]
-        driver.implicitly_wait(0.0000000000000000000000000001)
+    while var: 
+        try:
+            driver.execute_script("arguments[0].scrollIntoView();", elem)
+            elements=driver.find_elements_by_class_name('Tkt2p')
+            elem=elements[0]
+            driver.implicitly_wait(0.0000000000000000000000000001)
+        except:
+            elements=driver.find_elements_by_class_name('Tkt2p')
+            elem=elements[0]
+            driver.implicitly_wait(0.0000000000000000000000000001)
         try:
             kek=driver.find_elements_by_class_name('_3FXB1')
             for i in range(len(kek)):
@@ -238,7 +255,12 @@ def compute_output_file(names,group_no):
                     except:
                         df['Song_Link'+str(yesterday)].iloc[i]=0
                     df['No_Of_Songs'+str(yesterday)].iloc[i]=len(names[k])-1
-                    df['Points'+str(yesterday)].iloc[i]=((len(names[k])-1)*3)+(names[k][0])
+                    if str(group_no)=='1':
+                        df['Points'+str(yesterday)].iloc[i]=((len(names[k])-1)*15)
+                        print('group1 different point system active')
+                    else:
+                        
+                        df['Points'+str(yesterday)].iloc[i]=((len(names[k])-1)*3)+(names[k][0])
                     break
 
     df['Count'+str(yesterday)].iloc[len(df)-1]=0
@@ -248,7 +270,8 @@ def compute_output_file(names,group_no):
     df['Points'+str(yesterday)].iloc[len(df)-1]=0
     df['Points'+str(yesterday)].iloc[len(df)-1]=df['Points'+str(yesterday)].sum()      
     df['Name'].iloc[len(df)-1]='Sums of all fields'              
-    #df.to_excel("output"+str(group_no)+".xlsx",index=False)
+    df.to_excel("output"+str(group_no)+".xlsx",index=False)
+    print('output file written')
     return(df)
 
 
@@ -269,7 +292,7 @@ def compute_outputer_file(links,group_no):
         except:
             df2['Liked By'+str(yesterday)].iloc[counter]=0
         counter+=1 
-    #df2.to_excel("outputer"+str(group_no)+".xlsx",index=False)
+    df2.to_excel("outputer"+str(group_no)+".xlsx",index=False)
     return df2
     
 
@@ -287,12 +310,26 @@ def compute_pointstable_file(names,group_no,df):
             if df['Name'].iloc[j]==df3['Number'].iloc[i]:
                 df3['Points'].iloc[i]+=df["Points"+str(yesterday)].iloc[j]
                 break    
+    df3.to_excel('PointsTablemid'+str(group_no)+'.xlsx',index=False)
+    print('df3 written')
     return df3
-    #df3.to_excel('PointsTablemid'+str(group_no)+'.xlsx',index=False)
+
+
+def sender_boi(driver,df3,group):
+    driver.find_element_by_xpath('//*[@title='+'"'+str(group)+'"'+']').click()
+    for i in range(len(df3)):
+        if df3['Number'].iloc[i]==str(0):
+            df3=df3.iloc[:i+2,:]
+            break
+    ans=df3.to_string()
+    entername=driver.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[2]/div/div[2]')
+    entername.send_keys(str(ans))
+    driver.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[2]/div/div[2]').clear()
+        
 
 
 
-list_of_groups=['Leaf song discovery Hindi','Leaf SongDiscoveryHindi 2']
+list_of_groups=['Leaf song discovery Hindi','Leaf SongDiscoveryHindi 2','Leaf SongDiscoveryHindi 3','Leaf SongDiscoveryHindi 4','Leaf SongDiscoveryHindi 5']
 today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
 for group in list_of_groups:
@@ -305,5 +342,7 @@ for group in list_of_groups:
     df=compute_output_file(names,list_of_groups.index(group)+1)
     df2=compute_outputer_file(links,list_of_groups.index(group)+1)
     df3=compute_pointstable_file(names,list_of_groups.index(group)+1,df)
+    sender_boi(driver,df3,group)
+    
     
     
