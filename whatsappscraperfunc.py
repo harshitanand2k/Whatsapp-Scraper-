@@ -244,7 +244,14 @@ def compute_output_file(names,group_no):
                     except:
                         df['Song_Link'+str(yesterday)].iloc[i]=0
                     df['No_Of_Songs'+str(yesterday)].iloc[i]=len(names[k])-1
-                    df['Points'+str(yesterday)].iloc[i]=((len(names[k])-1)*3)+(names[k][0])
+                    if str(group_no)=='1':
+                        if int(df['No_Of_Songs'+str(yesterday)].iloc[i])<=3:
+                            df['Points'+str(yesterday)].iloc[i]=(((len(names[k]))-1)*15)
+                        else:
+                            df['Points'+str(yesterday)].iloc[i]=3*15
+                            
+                    else:
+                        df['Points'+str(yesterday)].iloc[i]=((len(names[k])-1)*3)+(names[k][0])
         else:
             for i in range(len(df)):
                 if df['Name'].iloc[i]=='0':
@@ -256,7 +263,7 @@ def compute_output_file(names,group_no):
                         df['Song_Link'+str(yesterday)].iloc[i]=0
                     df['No_Of_Songs'+str(yesterday)].iloc[i]=len(names[k])-1
                     if str(group_no)=='1':
-                        df['Points'+str(yesterday)].iloc[i]=((len(names[k])-1)*15)
+                        df['Points'+str(yesterday)].iloc[i]=(((len(names[k]))-1)*15)
                         print('group1 different point system active')
                     else:
                         
@@ -339,7 +346,7 @@ for group in list_of_groups:
     soup2=soup
     names=computation_names(soup)
     links=computation_links(soup2,names)
-    df=compute_output_file(names,list_of_groups.index(group)+1)
+    df=compute_output_file(names,str(list_of_groups.index(group)+1))
     df2=compute_outputer_file(links,list_of_groups.index(group)+1)
     df3=compute_pointstable_file(names,list_of_groups.index(group)+1,df)
     sender_boi(driver,df3,group)
