@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 22 19:50:36 2020
+Created on Wed May 20 17:03:21 2020
 
+@author: HP
+"""
+
+
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Apr 22 19:50:36 2020
 @author: Snorlax / Kinjaz / Harshit
 """
 
@@ -26,7 +33,6 @@ def initiator():
     
     Initializing a selenium object which is the key for initiating the scraper
     Its just a basic chrome window which can be automated  using methods provided by selenium library
-
     """
     
     driver = Chrome()
@@ -41,16 +47,13 @@ def initiator():
 
 def scroller(group,driver):
     """
-
     Parameters
     ----------
     group : TYPE - name of the group
         DESCRIPTION - It's to be used as we have to find the title of the group and click it open'
-
     Returns
    
     soup- The beautiful soup object
-
      """
     driver.find_element_by_class_name('C28xL').click()
     entername=driver.find_element_by_xpath('//*[@id="side"]/div[1]/div/label/div/div[2]')
@@ -121,13 +124,11 @@ def computation_names(soup):
     
         DESCRIPTION. - This is the syntax with respect to whcih i Have made the 
                         data files , like output1, output2
-
     Returns
     
     names: dictionary
         DESCRIPTION - The list of numbers , with the number of total likes they got
                         and the songs they posted
-
     """    
     
     times=soup.findAll("span",{"class":"_3EFt_"})
@@ -171,6 +172,22 @@ def computation_names(soup):
                     for k,v in names.items():
                         if link in v:
                             names[k][0]+=1
+                            
+    p=driver.find_element_by_class_name('_2y17h')
+    q=p.find_element_by_xpath('div[2]/div[2]/span')
+    l=q.text
+    l=l.split(',')
+    for i in range(len(l)):
+        l[i]=l[i].replace(" ","")
+        l[i]=l[i][3:]
+    
+    popper=[]
+    for k,v in names.items():
+        if k not in l:
+            popper.append(k)
+        
+    for item in popper:
+        names.pop(item)
                         
     return names
 
@@ -180,7 +197,6 @@ def computation_names(soup):
 
 def computation_links(soup,names):
     """
-
     Parameters
     ----------
     soup : The beautiful soup object
@@ -189,12 +205,10 @@ def computation_links(soup,names):
         DESCRIPTION - the gorup number synatx , to be used 
     names : TYPE - dictionary
         DESCRIPTION - the dictionary containing names
-
     Returns
     links: TYPE -dictionary
         DESCRIPTION - the dictionary containing links
         
-
     """
     
     links=defaultdict()
@@ -350,6 +364,4 @@ for group in list_of_groups:
     df2=compute_outputer_file(links,list_of_groups.index(group)+1)
     df3=compute_pointstable_file(names,list_of_groups.index(group)+1,df)
     sender_boi(driver,df3,group)
-    
-    
     
