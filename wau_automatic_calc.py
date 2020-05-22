@@ -20,13 +20,16 @@ col_names=[]
 for i in range(1,7):
     df=pd.read_excel('output'+str(i)+'.xlsx')
     for col in df.columns:
-        if re.match('Points',col) and not re.search('.1',col):
+        if re.match('Points',col) and len(col)<=16:
             if col[6:] not in actual_cols:
                 actual_cols.append(col[6:])
                 col_names.append(col)
     actual_cols=list(actual_cols)
     dict1={}
     
+        
+    
+
 for i in range(len(actual_cols)):
     day = dt.strptime(actual_cols[i], '%Y-%m-%d')
     week=datetime.date(day.year, day.month, day.day).isocalendar()[1]
@@ -37,7 +40,7 @@ for i in range(len(actual_cols)):
         
 df2=pd.read_excel('wau.xlsx')
 kek=0
-WAU=1
+WAU=0
 counter=0
 for col in df2.columns:
     df2[col]=0
@@ -57,7 +60,7 @@ for i in range(1,7):
                 kek=0
         df2['B'+str(i)].iloc[counter]=WAU
         counter+=1
-        WAU=1
+        WAU=0
     counter=0
     
 
