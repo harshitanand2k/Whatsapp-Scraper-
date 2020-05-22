@@ -37,7 +37,7 @@ for i in range(len(actual_cols)):
         
 df2=pd.read_excel('wau.xlsx')
 kek=0
-WAU=0
+WAU=1
 counter=0
 for col in df2.columns:
     df2[col]=0
@@ -57,7 +57,7 @@ for i in range(1,7):
                 kek=0
         df2['B'+str(i)].iloc[counter]=WAU
         counter+=1
-        WAU=0
+        WAU=1
     counter=0
     
 
@@ -72,5 +72,5 @@ for i in range(len(df2)):
     for j in range(2,len(df2.columns)):
         df2['B'].iloc[i]+=df2[df2.columns[j]].iloc[i]
         
-
+df2.to_excel('wau.xlsx',index=False)
     
